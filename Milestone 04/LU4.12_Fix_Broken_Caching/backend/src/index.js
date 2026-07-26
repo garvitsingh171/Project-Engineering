@@ -15,7 +15,7 @@ const CACHE_TTL = 30 * 1000
 function setCache(key, data) {
   cache.set(key, {
     data,
-    expiresAt: Date.now() + CACHE_TTL;
+    expiresAt: Date.now() + CACHE_TTL
   });
 }
 
