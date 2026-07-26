@@ -8,7 +8,7 @@ exports.addRoommate = async (req, res) => {
         res.status(201).json(roommate);
     } catch (err) {
         console.log("Roommate fail"); // Vague log
-        res.status(500).json({ error: "Fail" }); // Generic response
+        res.status(500).json({ error: "Failed to create roommate" }); // Generic response
     }
 };
 
@@ -16,6 +16,6 @@ exports.getRoommates = async (req, res) => {
     try {
         res.json(await prisma.roommate.findMany());
     } catch (err) {
-        res.status(500).json({ error: "Fail" });
+        res.status(500).json({ error: "Failed to get roommate" });
     }
 };
