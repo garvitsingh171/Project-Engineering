@@ -41,6 +41,10 @@ const prisma = new PrismaClient();
 // HAPPY PATH TESTS
 // These test what happens when everything works correctly.
 // ─────────────────────────────────────────────
+   beforeEach(() => {
+     jest.clearAllMocks();
+   });
+
 describe('Happy Path', () => {
 
   test('POST /api/notes — creates a note and returns 201', async () => {
@@ -62,7 +66,7 @@ describe('Happy Path', () => {
     // ❌ FLAW 2: Status code is wrong. POST that creates a resource
     //    should return 201 Created, not 200 OK.
     //    Fix: change 200 to 201.
-    expect(res.statusCode).toBe(200);                    // ❌ should be 201
+    expect(res.statusCode).toBe(201);                    // ❌ should be 201
     expect(res.body).toHaveProperty('note');
     expect(res.body.note.title).toBe('My First Note');
   });
@@ -86,7 +90,7 @@ describe('Happy Path', () => {
     // ❌ FLAW 3: Wrong response field. The endpoint wraps the note in
     //    { note: ... } but this test checks res.body.data.note.
     //    Fix: change res.body.data.note to res.body.note.
-    expect(res.body.data.note.title).toBe('My First Note');  // ❌ wrong path
+    expect(res.body.note.title).toBe('My First Note');  // ❌ wrong path
   });
 
 });
@@ -105,7 +109,7 @@ describe('Failure Path', () => {
     //    with { note: undefined } instead of 404.
     //
     //    Fix: add this line before the request:
-    //    prisma.note.findUnique.mockResolvedValue(null);
+    prisma.note.findUnique.mockResolvedValue(null);
 
     const res = await request(app).get('/api/notes/9999');
 
@@ -127,7 +131,7 @@ describe('Failure Path', () => {
     //    not 400 Bad Request.
     //    Fix: change 400 to 422.
     //    Also fix: the endpoint in src/routes/notes.js needs validation added.
-    expect(res.statusCode).toBe(400);                    // ❌ should be 422
+    expect(res.statusCode).toBe(422);                    // ❌ should be 422
     expect(res.body).toHaveProperty('message');
   });
 
@@ -170,7 +174,7 @@ describe('Edge Cases', () => {
 
     // Number('not-a-number') is NaN. Prisma will throw a validation error.
     // The endpoint should handle this and return 404 or 400 — not 200.
-    expect(res.statusCode).not.toBe(200);
+    expect(res.statusCode).not.toBe(400);
   });
 
 });

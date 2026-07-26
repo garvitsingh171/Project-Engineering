@@ -14,12 +14,14 @@
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
 const userRouter = require('./src/user.controller');
+require('dotenv').config();
+const cors = require('cors');
 
 // BUG 06
 const prisma = new PrismaClient({
   datasources: {
     db: {
-      url: 'postgresql://admin:supersecretpassword@localhost:5432/forge_db',
+      url: process.env.DATABASE_URL,
     },
   },
 });
@@ -28,6 +30,9 @@ const app = express();
 app.use(express.json());
 
 // BUG 05
+app.use(cors({
+  origin: process.env.FRONTEND_ORIGIN
+}))
 
 app.use('/users', userRouter);
 
@@ -35,7 +40,7 @@ const errorHandler = require('./src/middleware/errorHandler');
 app.use(errorHandler);
 
 // BUG 06
-const PORT = 3000;
+const PORT = process.env.PORT;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
 module.exports = app;
