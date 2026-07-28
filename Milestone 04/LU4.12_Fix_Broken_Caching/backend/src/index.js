@@ -10,40 +10,69 @@ app.use(express.json());
 
 
 const cache = new Map();
+const CACHE_TTL = 30 * 1000
+
+function setCache(key, data) {
+  cache.set(key, {
+    data,
+    expiresAt: Date.now() + CACHE_TTL
+  });
+}
+
+function getCache(key) {
+  const cached = cache.get(key);
+
+  if (!cached) return null;
+
+  if (Date.now() > cached.expiresAt) {
+    cache.delete(key);
+    return null;
+  }
+
+  return cached.data;
+}
+
+function invalidateTaskCache(id) {
+  cache.delete('tasks:all');
+  if (id) {
+    cache.delete(`tasks:${id}`)
+  }
+}
 
 // GET /tasks
 app.get('/tasks', async (req, res) => {
   try {
     // BUG 2: Global cache key logic (Used for EVERYTHING)
-    const cacheKey = 'global_data_key';
+    const cacheKey = 'tasks:all';
     
     if (cache.has(cacheKey)) {
       console.log('Serving from cache');
-      const cachedResult = cache.get(cacheKey);
+      const cachedResult = getCache(cacheKey);
       // BUG 4: Missing await simulation -> If store promise, wait for it here
       // But let's say the student forgets to even wait for it here or the code fails
       return res.status(200).json(cachedResult);
     }
 
     // BUG 4: Missing await (Promise stored in cache)
-    const tasksPromise = prisma.task.findMany();
-    cache.set(cacheKey, tasksPromise); 
+    const tasksPromise = await prisma.task.findMany();
+    setCache(cacheKey, tasksPromise); 
     
     const tasks = await tasksPromise;
     res.status(200).json(tasks);
   } catch (err) {
     // BUG 8: Errors swallowed
     console.log('Error fetching tasks', err);
+    return res.status(500).json({ error: 'Failed to fetch tasks' });
   }
 });
 
 // GET /tasks/:id
 app.get('/tasks/:id', async (req, res) => {
   const { id } = req.params;
-  const cacheKey = `task_${id}`;
+  const cacheKey = `tasks${id}`;
 
   try {
-    if (cache.has(cacheKey)) {
+    if (getCache(cacheKey)) {
       // BUG 5: Null values cached permanently
       // If we cached null, we just return it
       return res.status(200).json(cache.get(cacheKey));
@@ -54,12 +83,16 @@ app.get('/tasks/:id', async (req, res) => {
     });
 
     // BUG 5: Cached even if null
-    cache.set(cacheKey, task);
+    if (!task) {
+      return res.status(404).json({ error: 'Task not found' });
+    }
+    setCache(cacheKey, task);
     
     // BUG 6: Wrong status codes (200 everywhere)
     res.status(200).json(task);
   } catch (err) {
     console.log('Error fetching task', err);
+    return res.status(500).json({ error: 'Failed to fetch tasks' });
   }
 });
 
@@ -75,11 +108,13 @@ app.post('/tasks', async (req, res) => {
     // Wait, if I use the return value it's fine. 
     // Let's just create a messy caching logic here too
     // Note: No invalidation of the 'all_tasks_data' key here
+    invalidateTaskCache();
     
     // BUG 6: Wrong status code (should be 201)
-    res.status(200).json(newTask);
+    res.status(201).json(newTask);
   } catch (err) {
     console.log('Error creating task', err);
+    return res.status(500).json({ error: 'Failed to fetch tasks' });
   }
 });
 
@@ -93,11 +128,13 @@ app.delete('/tasks/:id', async (req, res) => {
 
     // BUG 1: Cache NOT invalidated after delete!
     // The list in 'all_tasks_data' and 'task_id' still exist
+    invalidateTaskCache(id);
     
     // BUG 6: Wrong status code (should be 204 or 200 with message)
     res.status(200).json({ message: 'Deleted' });
   } catch (err) {
     console.log('Error deleting task', err);
+    return res.status(500).json({ error: 'Failed to fetch tasks' });
   }
 });
 
