@@ -21,6 +21,7 @@ model Product {
   price  Float
   // 🚨 TASK 02 — stock field is intentionally missing.
   // Add it here before running the migration.
+  stock  Int     @default(1)
   orders Order[]
 }
 

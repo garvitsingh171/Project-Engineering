@@ -10,11 +10,11 @@
 //  Your job: find them, fix them, document them in BUG_REPORT.md
 // ─────────────────────────────────────────────────────
 
-import { useState, useEffect } from 'react';
-import { searchProducts } from '../api/shopwaveApi';
+import { useState, useEffect } from "react";
+import { searchProducts } from "../api/shopwaveApi";
 
 export default function ProductSearch() {
-  const [query, setQuery]     = useState('');
+  const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -32,23 +32,28 @@ export default function ProductSearch() {
   // ────────────────────────────────────────────────────
 
   useEffect(() => {
-    if (query.trim() === '') {
+    if (query.trim() === "") {
       setResults([]);
       setLoading(false);
       return;
     }
+    const timer = setTimeout(() => {
+      setLoading(true);
 
-    setLoading(true);
+      searchProducts(query).then((data) => {
+        setResults(data); // ← ask yourself: does calling this affect the deps?
+        setLoading(false);
+      });
+    }, 1000);
 
-    searchProducts(query).then((data) => {
-      setResults(data);    // ← ask yourself: does calling this affect the deps?
-      setLoading(false);
-    });
+    return () => {
+      clearTimeout(timer);
+    }
 
     // ❌ Bug #1: `results` is listed as a dependency.
     //    Every setResults() call changes `results`, which re-runs this effect,
     //    which calls setResults() again → infinite loop.
-  }, [query, results]);    // 👈 something is wrong here
+  }, [query]); // 👈 something is wrong here
 
   // ❌ Bug #2: No debounce, no cleanup function.
   //    Every keystroke fires a new request immediately.
@@ -82,10 +87,8 @@ export default function ProductSearch() {
         </div>
       )}
 
-      {!loading && results.length === 0 && query.trim() !== '' && (
-        <div className="empty-state">
-          No products found for "{query}".
-        </div>
+      {!loading && results.length === 0 && query.trim() !== "" && (
+        <div className="empty-state">No products found for "{query}".</div>
       )}
 
       <div className="product-grid">
