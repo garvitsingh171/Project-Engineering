@@ -56,7 +56,11 @@ export default function OrderManager() {
     if (order) {
       order.status = newStatus;                    // ❌ mutates existing object
     }
-    setOrders(updatedOrders);                      // ❌ React: "same ref → skip re-render"
+    setOrders(
+      orders.map((order) =>
+        order.id === orderId ? { ...order, status: newStatus } : order
+      )
+    );                      // ❌ React: "same ref → skip re-render"
 
     setSaving(null);
   };
