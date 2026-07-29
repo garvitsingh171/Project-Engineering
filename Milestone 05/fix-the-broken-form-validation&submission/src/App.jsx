@@ -56,18 +56,36 @@ export default function App() {
     e.preventDefault()
 
     // BUG: validate() result is ignored; submission always continues
-    validate()
+    const isValid = validate()
+
+    if (!isValid) {
+      return
+    }
 
     // BUG: loading is never set to true before the API call
+    setLoading(true)
     try {
       const result = await submitBugReport(form)
       setSuccessId(result.id)
       setSubmitted((prev) => [result, ...prev])
       // BUG: form state is never reset after success
+      setForm({
+        title: '',
+        severity: '',
+        component: '',
+        description: '',
+        steps: '',
+        stepsCount: '',
+      })
+      setErrors({})
     } catch (err) {
       // BUG: server error is caught but nothing is shown to the user
+      setServerError(
+        err.message || 'Something went wrong'
+      )
     } finally {
       // BUG: loading is never set back to false
+      setLoading(false)
     }
   }
 
@@ -113,6 +131,9 @@ export default function App() {
               placeholder="e.g. Checkout button unresponsive on mobile Safari"
             />
             {/* BUG: error message for title is never rendered */}
+            {errors.title && (
+              <p className="error-message">{errors.title}</p>
+            )}
           </div>
 
           <div className="form-row">
@@ -123,6 +144,9 @@ export default function App() {
                 {SEVERITIES.map((s) => <option key={s}>{s}</option>)}
               </select>
               {/* BUG: error message for severity is never rendered */}
+              {errors.severity && (
+                <p className="error-message">{errors.severity}</p>
+              )}
             </div>
             <div className="form-group">
               <label>Affected Component <span className="req">*</span></label>
@@ -131,6 +155,9 @@ export default function App() {
                 {COMPONENTS.map((c) => <option key={c}>{c}</option>)}
               </select>
               {/* BUG: error message for component is never rendered */}
+              {errors.component && (
+                <p className="error-message">{errors.component}</p>
+              )}
             </div>
           </div>
 
@@ -143,6 +170,9 @@ export default function App() {
               placeholder="Describe what's happening and what the expected behaviour should be…"
             />
             {/* BUG: error message for description is never rendered */}
+            {errors.description && (
+              <p className="error-message">{errors.description}</p>
+            )}
           </div>
 
           <hr className="divider" />
@@ -168,12 +198,19 @@ export default function App() {
                 placeholder="e.g. 3"
               />
               {/* BUG: accepts 0, negatives, and empty — no validation */}
+              {errors.stepsCount && (
+                <p className="error-message">{errors.stepsCount}</p>
+              )}
             </div>
           </div>
 
           {/* BUG: button is never disabled during loading, no spinner shown */}
-          <button type="submit" className="btn btn-primary">
-            Submit Bug Report
+          <button
+            type="submit"
+            className="btn btn-primary"
+            disabled={loading}
+          >
+            {loading ? 'Submitting...' : 'Submit Bug Report'}
           </button>
 
         </form>
