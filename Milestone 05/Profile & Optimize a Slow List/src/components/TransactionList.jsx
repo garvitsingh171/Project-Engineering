@@ -1,5 +1,19 @@
 import React from 'react';
+import { FixedSizeList } from 'react-window';
 import TransactionRow from './TransactionRow';
+
+const VirtualizedRow = ({ index, style, data }) => {
+  const transaction = data.transactions[index];
+
+  return (
+    <div style={style}>
+      <TransactionRow
+        transaction={transaction}
+        onSelect={data.onSelect}
+      />
+    </div>
+  );
+};
 
 const TransactionList = ({ transactions, onSelect }) => {
   return (
@@ -10,13 +24,9 @@ const TransactionList = ({ transactions, onSelect }) => {
           Rendering all 2,000+ items at once instead of using virtualization 
         */}
         {transactions.length > 0 ? (
-          transactions.map((transaction) => (
-            <TransactionRow 
-              key={transaction.id} 
-              transaction={transaction} 
-              onSelect={onSelect} 
-            />
-          ))
+          <FixedSizeList height={636} itemSize={73} itemCount={transactions.length} itemData = {{ transactions, onSelect }} width="100%">
+            {VirtualizedRow}
+          </FixedSizeList>
         ) : (
           <div className="h-full flex flex-col items-center justify-center text-gray-500 p-8 space-y-3">
              <div className="p-4 bg-gray-50 rounded-full">

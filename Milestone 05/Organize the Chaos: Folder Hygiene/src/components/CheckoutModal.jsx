@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Modal from './Modal';
 import Button from './Button';
-import { submitOrder } from './cartService';
+import { submitOrder } from '../features/cart/cartService';
 import { PackageCheck, CheckCircle2, ChevronRight } from 'lucide-react';
 
 const CheckoutModal = ({ isOpen, onClose, onSuccess }) => {

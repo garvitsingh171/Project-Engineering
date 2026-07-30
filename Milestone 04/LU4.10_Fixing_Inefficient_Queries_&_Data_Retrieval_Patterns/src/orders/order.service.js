@@ -7,19 +7,22 @@ const prisma = new PrismaClient({
 export async function getOrders() {
   const orders = await prisma.order.findMany({
     orderBy: { createdAt: 'desc' },
+    include: {
+      user: true
+    }
   });
 
   // 💀 N+1 Loop - fetching users one by one
-  const ordersWithUsers = await Promise.all(
-    orders.map(async (order) => {
-      const user = await prisma.user.findUnique({
-        where: { id: order.userId },
-      });
-      return { ...order, user };
-    })
-  );
+  // const ordersWithUsers = await Promise.all(
+  //   orders.map(async (order) => {
+  //     const user = await prisma.user.findUnique({
+  //       where: { id: order.userId },
+  //     });
+  //     return { ...order, user };
+  //   })
+  // );
 
-  return ordersWithUsers;
+  return orders.user;
 }
 
 export async function getOrderById(id) {
