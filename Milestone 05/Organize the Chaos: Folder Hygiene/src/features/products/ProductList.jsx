@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useProducts } from './useProducts';
 import ProductCard from './ProductCard';
 import Spinner from './Spinner';
-import ErrorMessage from './ErrorMessage';
+import ErrorMessage from '../../components/ErrorMessage';
 import { useDebounce } from './useDebounce';
 import { Search, ShoppingBag } from 'lucide-react';
 

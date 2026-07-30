@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { useCart } from './useCart';
 import CartItem from './CartItem';
 import { formatCurrency } from './formatCurrency';
-import EmptyState from './EmptyState';
+import EmptyState from '../../EmptyState';
 import Button from './Button';
-import CheckoutModal from './CheckoutModal';
+import CheckoutModal from '../../CheckoutModal';
 import { ShoppingBag, ArrowLeft, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
