@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useTransactions } from '../hooks/useTransactions';
 import TransactionList from '../components/TransactionList';
 import { Search, Wallet, TrendingUp, ArrowUpRight, Plus, Filter } from 'lucide-react';
@@ -6,6 +6,9 @@ import { Search, Wallet, TrendingUp, ArrowUpRight, Plus, Filter } from 'lucide-r
 const Transactions = () => {
   const { filteredTransactions, filter, setFilter } = useTransactions();
   const [selectedId, setSelectedId] = useState(null);
+  const handleSelect = useCallback((id) => {
+    setSelectedId(id);
+  }, [])
 
   const selectedTransaction = filteredTransactions.find(t => t.id === selectedId);
 
@@ -80,7 +83,7 @@ const Transactions = () => {
           */}
           <TransactionList 
             transactions={filteredTransactions} 
-            onSelect={(id) => setSelectedId(id)} 
+            onSelect={handleSelect} 
           />
         </div>
 

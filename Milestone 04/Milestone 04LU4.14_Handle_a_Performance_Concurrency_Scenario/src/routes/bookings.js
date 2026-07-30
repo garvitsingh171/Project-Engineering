@@ -3,6 +3,7 @@
 const express = require('express');
 const router  = express.Router();
 const bookingService = require('../services/bookingService');
+const bookingLimiter = require('../middleware/rateLimiter');
 
 // ❌ FLAW 1: No rate limiter on this route.
 //
@@ -17,7 +18,7 @@ const bookingService = require('../services/bookingService');
 
 // POST /api/bookings/book
 // Books a seat for a show on behalf of a user
-router.post('/book', async (req, res, next) => {
+router.post('/book', bookingLimiter, async (req, res, next) => {
   try {
     const { userId, seatId, showId } = req.body;
 

@@ -16,6 +16,9 @@ router.post('/', async (req, res, next) => {
 
     // Missing validation here — title can be empty, null, or undefined
     // and the endpoint will still attempt to create a note.
+    if (!title) {
+      return res.status(422).json({ message: "Title can not be empty."})
+    }
 
     const note = await prisma.note.create({
       data: { title, content }
@@ -40,7 +43,7 @@ router.get('/:id', async (req, res, next) => {
 
     if (!note) {
       // ❌ Wrong key — 'error' should be 'message'
-      return res.status(404).json({ error: 'Not found' });
+      return res.status(404).json({ message: 'Note not found' });
     }
 
     res.status(200).json({ note });
