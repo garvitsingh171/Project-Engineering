@@ -1,4 +1,4 @@
-import { createContext, useState } from 'react'
+import { createContext, useEffect, useState } from 'react'
 
 export const AuthContext = createContext(null)
 
@@ -17,6 +17,8 @@ export const AuthProvider = ({ children }) => {
     
     // ❌ Missing: localStorage.setItem('authToken', fakeToken)
     // ❌ Missing: localStorage.setItem('authUser', JSON.stringify(userData))
+    localStorage.setItem('authItem', fakeToken)
+    localStorage.setItem('authUser', JSON.stringify(userData))
     console.log('✅ User logged in:', userData.email)
   }
 
@@ -26,10 +28,16 @@ export const AuthProvider = ({ children }) => {
     setToken(null)
     // ❌ Missing: localStorage.removeItem('authToken')
     // ❌ Missing: localStorage.removeItem('authUser')
+    localStorage.removeItem('authToken')
+    localStorage.removeItem('authUser')
     console.log('🚪 User logged out')
   }
 
   // BUG 2 (Part 2): Missing useEffect to load user from localStorage on mount
+  useEffect(() => {
+    setUser(localStorage.getItem('authUser'))
+    setToken(localStorage.getItem('authToken'))
+  })
 
   const value = {
     user,

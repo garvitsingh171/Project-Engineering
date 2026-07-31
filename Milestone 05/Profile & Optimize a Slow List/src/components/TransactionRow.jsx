@@ -82,4 +82,4 @@ const TransactionRow = ({ transaction, onSelect }) => {
   );
 };
 
-export default TransactionRow;
+export default React.memo(TransactionRow);
