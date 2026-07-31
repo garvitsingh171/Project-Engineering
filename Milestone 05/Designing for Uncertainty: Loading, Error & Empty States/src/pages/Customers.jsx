@@ -1,11 +1,42 @@
 import React from 'react';
 import { useCustomers } from '../hooks/useCustomers';
 import CustomerRow from '../components/CustomerRow';
+import { SkeletonCard, ErrorMessage, EmptyState } from '../components/states'
 
 const Customers = () => {
     const { data: customers, isLoading, error } = useCustomers();
 
     // DELIBERATE GAP: Nothing here for loading, error, or empty data records.
+    if (isLoading) {
+  return (
+    <div className="p-8">
+      <h1 className="text-2xl font-bold text-gray-800 mb-6">Recent Orders</h1>
+      <SkeletonCard count={4} variant="table" />
+    </div>
+  )
+}
+
+if (error) {
+  return (
+    <div className="p-8">
+      <ErrorMessage
+        message="We couldn't load your orders. Check your connection and try again."
+        onRetry={refetch}
+      />
+    </div>
+  )
+}
+
+if (!orders || orders.length === 0) {
+  return (
+    <div className="p-8">
+      <EmptyState
+        title="No orders yet"
+        message="New orders will appear here once customers start purchasing."
+      />
+    </div>
+  )
+}
 
     return (
         <div className="p-8">

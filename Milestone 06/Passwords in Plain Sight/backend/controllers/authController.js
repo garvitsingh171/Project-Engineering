@@ -1,5 +1,6 @@
 import User from '../models/User.js'
 import jwt from 'jsonwebtoken'
+import bcrypt from 'bcryptjs';
 
 // @desc    Register user
 // @route   POST /api/auth/signup
@@ -13,9 +14,10 @@ export const signup = async (req, res) => {
     }
 
     // Password stored directly — no hashing
+    const hashedPassword = await bcrypt.hash(password, 10);
     const user = await User.create({
       email,
-      password, // plain text stored here
+      hashedPassword, // plain text stored here
     })
 
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
@@ -40,8 +42,13 @@ export const login = async (req, res) => {
     }
 
     // Direct string comparison — unsafe
-    if (user.password !== password) {
-      return res.status(401).json({ message: 'Invalid credentials' })
+    // if (user.password !== password) {
+    //   return res.status(401).json({ message: 'Invalid credentials' })
+    // }
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Invalid Credentials' })
     }
 
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {

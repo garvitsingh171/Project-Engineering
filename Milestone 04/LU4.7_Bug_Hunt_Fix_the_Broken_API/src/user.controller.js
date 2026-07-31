@@ -35,12 +35,21 @@ const prisma = new PrismaClient();
 async function createUser(req, res, next) {
   // BUG 04
   try {
+    const name = req.body.name;
+    const email = req.body.email;
+
+    if (!name || !email) {
+      return res.status(400).json({error: "Please provide email and name."})
+    }
     const user = await prisma.user.create({ data: req.body });
     // BUG 02
-    res.status(200).json(user);
+    res.status(201).json(user);
   } catch (error) {
     // BUG 07 & BUG 08
-    console.log(error);
+    if (error.code === 'P2002') {
+      return res.status(409).json({ error: "Email already exists" });
+    }
+    next(error);
   }
 }
 
@@ -49,9 +58,12 @@ async function getUser(req, res, next) {
   try {
     const id = parseInt(req.params.id);
     // BUG 01
-    const user = prisma.user.findUnique({ where: { id } });
+    const user = await prisma.user.findUnique({ where: { id } });
     
     // BUG 03
+    if (!user) {
+      return res.status(404).json({error: "User Not Found"})
+    }
     res.json({ id: user.id, name: user.name, email: user.email });
   } catch (err) {
     next(err);

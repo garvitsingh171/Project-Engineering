@@ -8,7 +8,7 @@ import { Shield } from 'lucide-react'
  */
 function Navbar() {
   // ❌ BUG 4: useAuth() hook is not called here
-  // const { user, isAuthenticated, logout } = useAuth()
+  const { user, isAuthenticated, logout } = useAuth()
 
   return (
     <nav className="bg-white border-b border-slate-200 px-6 py-4">
